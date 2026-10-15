@@ -60,6 +60,7 @@ public class MainActivity extends Activity {
   static final float EXIT_SLOP_PX = 60;
 
   private WebView web;
+  private boolean networkReceiverRegistered;
   private final Handler handler = new Handler(Looper.getMainLooper());
   // Not cleared in onDestroy, so a navigation rebind that has started always finishes.
   private final Handler rebindHandler = new Handler(Looper.getMainLooper());
@@ -119,7 +120,8 @@ public class MainActivity extends Activity {
                 if (which == 0) openLauncher();
                 else if (which == 1) startActivity(new Intent(Settings.ACTION_SETTINGS));
                 else if (which == 2) openWifiSettings();
-                else web.reload();
+                else if (web != null) web.reload();
+                else recreate();
               })
           .setNegativeButton("Back to dashboard", null).show();
     }
@@ -128,12 +130,26 @@ public class MainActivity extends Activity {
   @Override
   protected void onCreate(Bundle state) {
     super.onCreate(state);
-    applyDebugFlag(getIntent());
     applyHomeFlag(getIntent());
     keepNavigationEnabled();
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         | WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+    try {
+      initializeBrowser();
+    } catch (RuntimeException | LinkageError error) {
+      // Navigation must remain usable even when Android cannot initialize its browser provider.
+      Log.e(TAG, "Browser initialization failed; keeping native controls available", error);
+      if (web != null) {
+        try { web.destroy(); } catch (RuntimeException | LinkageError ignored) { }
+      }
+      web = null;
+      showBrowserUnavailable();
+    }
+  }
+
+  private void initializeBrowser() {
+    applyDebugFlag(getIntent());
     web = new WebView(this);
     WebSettings s = web.getSettings();
     s.setJavaScriptEnabled(true);
@@ -185,6 +201,39 @@ public class MainActivity extends Activity {
     @SuppressWarnings("deprecation")
     IntentFilter connectivity = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
     registerReceiver(networkChange, connectivity);
+    networkReceiverRegistered = true;
+  }
+
+  private void showBrowserUnavailable() {
+    LinearLayout panel = new LinearLayout(this);
+    panel.setOrientation(LinearLayout.VERTICAL);
+    panel.setGravity(Gravity.CENTER);
+    panel.setBackgroundColor(Color.rgb(17, 17, 17));
+    TextView title = new TextView(this);
+    title.setText("Browser unavailable");
+    title.setTextColor(Color.WHITE);
+    title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40);
+    panel.addView(title);
+    TextView message = new TextView(this);
+    message.setText("The dashboard browser could not start. Settings and the launcher are still available.");
+    message.setTextColor(Color.rgb(170, 170, 170));
+    message.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+    message.setGravity(Gravity.CENTER);
+    message.setPadding(dp(24), dp(12), dp(24), dp(28));
+    panel.addView(message);
+    Button settings = new Button(this);
+    settings.setText("Android settings");
+    settings.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_SETTINGS)));
+    panel.addView(settings);
+    Button launcher = new Button(this);
+    launcher.setText("Open launcher");
+    launcher.setOnClickListener(v -> openLauncher());
+    panel.addView(launcher);
+    Button retryBrowser = new Button(this);
+    retryBrowser.setText("Try again");
+    retryBrowser.setOnClickListener(v -> recreate());
+    panel.addView(retryBrowser);
+    setContentView(panel);
   }
 
   @Override
@@ -204,8 +253,9 @@ public class MainActivity extends Activity {
   protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
     setIntent(intent);
-    applyDebugFlag(intent);
     applyHomeFlag(intent);
+    if (web == null) return;
+    applyDebugFlag(intent);
     String url = urlFrom(intent);
     if (url != null) {
       handler.removeCallbacks(retry);
@@ -389,7 +439,7 @@ public class MainActivity extends Activity {
 
   @Override
   protected void onDestroy() {
-    unregisterReceiver(networkChange);
+    if (networkReceiverRegistered) unregisterReceiver(networkChange);
     handler.removeCallbacksAndMessages(null);
     if (web != null) web.destroy();
     super.onDestroy();

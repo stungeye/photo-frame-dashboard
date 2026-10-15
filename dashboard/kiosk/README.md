@@ -9,6 +9,20 @@ Hold two fingers still on the dashboard for 1.5 seconds to open the native contr
 - **Reload dashboard** reloads the current URL.
 - **Back to dashboard** dismisses the controls.
 
+If Android's browser provider cannot initialize, Home HQ shows a native **Browser
+unavailable** screen with **Android settings**, **Open launcher**, and **Try again**.
+The two-finger menu remains available on that screen. This keeps navigation usable
+while diagnosing a provider failure; it does not repair the browser itself.
+
+Host-only startup regression checks (Python 3 and a JDK on `PATH`):
+
+```sh
+python3 dashboard/kiosk/test-startup.py
+```
+
+These checks cover browser initialization failures and Activity cleanup, not
+physical-panel navigation or Android rendering.
+
 ## Dashboard URL
 
 The kiosk opens the hosted demo dashboard by default. To show your own, save its URL once:
