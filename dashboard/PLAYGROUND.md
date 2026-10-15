@@ -18,7 +18,7 @@ remote image dependencies, analytics, audio engines or account connections.
 | Daybook | Real local clock, sample weather and agenda; tap the household checkboxes. |
 | Habitat | Toggle simulated room lights; home consumption and exported solar power change. |
 | Departures | Change direction; simulated departures count down and loop every 24 minutes. |
-| Digital rain | Touch ripples, pan/pinch, rain/tunnel, four grades, flat/scanline display, surge, reseed, pause. |
+| Digital rain | Touch ripples, rain/lite tunnel, four grades, flat/baked scanlines, surge, reseed, pause. |
 | Gravity lab | Drag the attractor, switch to binary stars, pause or create a new field. |
 | Light loom | Draw with 2/6/12-fold symmetry; change colour, undo, clear, or keep a drawing locally. |
 | Living grid | Conway's Life on a wrapping grid. Paint/erase, step, randomise, or plant gliders. |
@@ -32,7 +32,7 @@ browser's local storage, with a graceful session-only fallback.
 
 Canvas experiments cancel their animation loop on navigation and skip work when
 the document is hidden. The rain iframe is destroyed on navigation. The renderer
-is limited to 24 FPS; the other animated canvases to 15–30 FPS. Reduced-motion
+is limited to 10 updates/s (lite tunnel: 6); the other animated canvases to 15–30 FPS. Reduced-motion
 preferences start rain, gravity and Life paused and stop decorative CSS animations.
 Fill-frame mode retains an on-screen Menu exit; Escape also exits.
 
@@ -40,13 +40,14 @@ Fill-frame mode retains an on-screen Menu exit; Escape also exits.
 
 Adapted directly from the owner's supplied [Digital Raindrop](https://digital-raindrops.netlify.app/)
 on 2026-10-15. `public/rain/rain.js` and `crt.js` preserve the supplied Canvas
-renderer and original CRT implementation for reference. The running frame edition
-uses `frame-crt.js`, a lightweight CSS scanline layer instead of a second raster
-and shader. This edition omits the audio engine, its settings,
-and audio calls; beat energy is always zero. The frame UI replaces the original
-settings panel, and defaults to scanlines, zero film grain and a 24 FPS ceiling. The backing canvas is capped at 800 pixels
-wide. The tunnel uses 28 lanes, a shorter draw distance, and upright atlas sprites
-to bound the old GPU’s per-frame work. The original
+renderer and original CRT implementation as unloaded references. The running
+edition now uses a specialized fixed-grid, dirty-tile renderer in `frame-core.js`
+and `frame-engine.js`. It has no audio engine or beat reactivity. It defaults to
+flat display, caps its raster at 640 pixels wide, bakes scanlines into its atlas,
+and leaves idle time between updates. The lite tunnel uses precomputed positions
+and pre-sized glyphs, giving up camera flight and rotating text. Offscreen
+pan/pinch territory is omitted. See [the performance notes](RAIN-PERFORMANCE.md)
+for operation counts, memory bounds, device measurements and test commands. The original
 rain source's UTF-8 SHA-256 was
 `f11545d869e2a5e4d0048241f53ef7177bc55233b6718ac3155fb6462547c37e`.
 
@@ -76,6 +77,9 @@ they do not force-stop the package or change its saved URL or accessibility gran
 
 ## Verification on 2026-10-15
 
+The initial demo checks below precede the eco rewrite. Current rain performance
+checks and their limits are recorded in [RAIN-PERFORMANCE.md](RAIN-PERFORMANCE.md).
+
 - Production build and syntax checks pass. The application entry bundle is about
   28 kB before gzip, excluding the separately loaded rain renderer.
 - All nine pages rendered in the installed Home HQ 1.1.1 kiosk on the connected
@@ -87,7 +91,7 @@ they do not force-stop the package or change its saved URL or accessibility gran
 - On-device touch input moved the gravity attractor, drew in Light loom, and
   launched Brick Club. The captured game reached score 10 after breaking a brick.
 - The original CRT path ran poorly and its curved mode drew a blank image on this
-  GPU. The frame edition therefore uses CSS scanlines. A sample of the tuned rain
+  GPU. The initial frame edition therefore used CSS scanlines. A sample of that rain
   displayed 19 FPS and the simplified tunnel 7 FPS; these are observations, not
   guaranteed rates. The tunnel remains an experimental, slower option.
 - The device is left on Explore with USB preview active. Its original hosted

@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test:rain": "node --test test/rain-core.test.mjs test/rain-runtime.test.mjs",
+    "bench:rain": "node test/rain-benchmark.mjs",
     "deploy": "vite build && wrangler deploy"
   },
   "devDependencies": {

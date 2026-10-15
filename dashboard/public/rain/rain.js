@@ -1,4 +1,5 @@
 // Adapted from the owner-supplied Digital Raindrop, retrieved 2026-10-15.
+// REFERENCE ONLY: not loaded by the frame. Used by test/rain-benchmark.mjs.
 // Source: https://digital-raindrops.netlify.app/js/rain.js
 // Silent frame edition: audio engine omitted; beat energy removed; 24 FPS.
 // One native Canvas runtime for desktop and mobile, with no external scripts.
