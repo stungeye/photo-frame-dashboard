@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000402">
+<title>Digital Rain — Silent Frame Edition</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#000402;color:#b3d8ba;font-family:monospace}#rain{position:absolute;inset:0;touch-action:none}#rain[data-crt=scan]:after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0px,transparent 2px,rgba(0,0,0,.22) 2px,rgba(0,0,0,.22) 3px)}header{position:absolute;top:30px;left:35px;pointer-events:none}header small{font-size:11px;letter-spacing:2px;opacity:.6}h1{font-size:26px;letter-spacing:4px;font-weight:400;margin:10px 0}header p{font-size:12px;opacity:.55}footer{position:absolute;left:35px;right:35px;bottom:28px;display:flex;justify-content:space-between;align-items:end;gap:20px}.buttons{display:flex;gap:8px;flex-wrap:wrap}button{font:12px monospace;min-height:48px;color:#bde4c6;background:rgba(4,18,10,.9);border:1px solid #43634d;border-radius:5px;padding:0 16px;cursor:pointer;touch-action:manipulation}button[aria-pressed=true]{background:#bedcaf;color:#15251a}button:focus-visible{outline:2px solid #d1ffd1;outline-offset:3px}.right{display:flex;flex-direction:column;align-items:end;gap:14px}#fps{font-size:11px;letter-spacing:1px;opacity:.65}#error{position:absolute;top:40%;left:15%;right:15%;display:none;background:#13291b;padding:26px;font-size:17px;line-height:1.6;z-index:10}
+</style>
+</head>
+<body>
+<main id="rain" aria-label="Interactive digital code rain. Touch to send a ripple; drag to pan; pinch to zoom."></main>
+<header><small>FRAME EXPERIMENT / 04</small><h1>DIGITAL RAINDROP</h1><p>Your window into the Matrix. No sound. Just signal.</p></header>
+<footer><div class="buttons" role="group" aria-label="Rain controls"><button id="pause" aria-pressed="false">Pause</button><button id="mode">Enter tunnel</button><button id="grade">Signal: Source</button><button id="crt">CRT: Scanlines</button><button id="surge">Surge</button><button id="reseed">Reseed</button></div><div class="right"><span id="fps">CONNECTING…</span><button id="fill">↗ Fill frame</button></div></footer>
+<div id="error" role="alert">The signal could not start. Use the sidebar to try another experiment, or reload Home HQ.</div>
+<script src="rain.js"></script>
+<script src="frame-crt.js"></script>
+<script src="frame.js"></script>
+</body>
+</html>

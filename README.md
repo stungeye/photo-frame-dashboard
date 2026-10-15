@@ -65,6 +65,12 @@ Settings → About before you follow any guide:
 
 ## The dashboard
 
+**This branch: Frame Playground.** Home HQ temporarily opens nine touch demos:
+three dashboard concepts, a silent adaptation of Digital Raindrop, gravity art,
+symmetrical drawing, Conway's Life, a brick-breaker game and a focus timer.
+See [the demo guide](dashboard/PLAYGROUND.md) for controls, USB preview, device
+verification and restoring the original dashboard. The original view modules are preserved.
+
 [`dashboard/`](dashboard) is the family dashboard we run on the BIUFRAME (it uses mock data): a Vite
 web app deployed to Cloudflare Workers. `dashboard/kiosk/` is a small full-screen WebView Android app,
 built without Gradle, that shows it. Hold two fingers still for 1.5 s to open a menu for the
