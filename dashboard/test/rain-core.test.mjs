@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { RainField, TunnelField, nextDelay, GLYPHS, TONES } from '../public/rain/frame-core.js';
+import { RainField, nextDelay, GLYPHS, TONES } from '../public/rain/frame-core.js';
 
 test('painting only dirty cells reconstructs the complete field over time', () => {
   const field = new RainField(640, 430, 123);
@@ -70,26 +70,6 @@ test('normal rain repaints a minority of cells at the target cadence', () => {
     for (let i = 0; i < 100; i++) { changed += field.step(.1); cells += field.count; }
   }
   assert.ok(changed / cells < .45, `dirty fraction ${changed / cells}`);
-});
-
-test('tunnel work and storage are bounded; its tick uses no trigonometry', () => {
-  const field = new TunnelField(640, 430, 8);
-  const bytes = field.bytes;
-  const sin = Math.sin, cos = Math.cos;
-  Math.sin = Math.cos = () => { throw Error('projection must happen only at setup'); };
-  try {
-    for (let tick = 0; tick < 500; tick++) {
-      const count = field.step(1 / 6);
-      assert.ok(count <= 240);
-      for (let n = 0; n < count; n++) {
-        const i = field.visible[n];
-        assert.ok(field.level[i] > 0 && field.level[i] < 6);
-        assert.ok(field.glyph[i] < 16);
-      }
-    }
-  } finally { Math.sin = sin; Math.cos = cos; }
-  assert.equal(field.bytes, bytes);
-  assert.ok(bytes < 3000);
 });
 
 test('the scheduler leaves idle time rather than chasing missed frames', () => {

@@ -6,7 +6,6 @@ export const TILE_H = 24;
 export const TONES = 8;
 export const MAX_RASTER_WIDTH = 640;
 export const TARGET_FPS = 10;
-export const TUNNEL_FPS = 6;
 export const DUTY_BUDGET = 0.20;
 export const GLYPHS = 'ﾊﾋｼﾂｳｰﾅﾐﾓﾆｻﾜｵﾘﾎﾏｴｷﾑﾃｹﾒｶﾕﾗｾﾈｽﾀﾇ0123456789Z*+:=.';
 export const PROFILES = {
@@ -147,82 +146,5 @@ export class RainField {
       this.head.byteLength + this.speed.byteLength + this.length.byteLength +
       this.gap.byteLength + this.active.byteLength + this.drawn.byteLength +
       this.dirty.byteLength + this.pulseAge.byteLength + this.pulseDistance.byteLength;
-  }
-}
-
-// A deliberately different tunnel: fixed projected slots, with code/brightness
-// flowing toward the viewer. Projection is calculated once, not per frame.
-// No rotating glyphs, camera flight, per-sprite resampling, halos or row Maps.
-export const TUNNEL_SIZES = [6, 9, 12, 16, 20, 24];
-export const TUNNEL_GLYPHS = 16;
-export const TUNNEL_TONES = 6;
-export class TunnelField {
-  constructor(width, height, seed = 1) {
-    this.width = width;
-    this.height = height;
-    this.rings = 12;
-    this.lanes = 20;
-    this.count = this.rings * this.lanes;
-    this.x = new Int16Array(this.count);
-    this.y = new Int16Array(this.count);
-    this.size = new Uint8Array(this.count);
-    this.glyph = new Uint8Array(this.count);
-    this.level = new Uint8Array(this.count);
-    this.visible = new Uint16Array(this.count);
-    this.visibleCount = 0;
-    this.time = 0;
-    this.surgeAt = -10000;
-    this.pulseUntil = 0;
-    const focal = Math.min(width, height) * .9;
-    for (let ring = 0; ring < this.rings; ring++) {
-      const z = .8 + ring * .72;
-      const radius = focal * 2.7 / z;
-      const cx = width * .5 + Math.sin(z * .6) * focal * .15;
-      const cy = height * .5 + Math.cos(z * .5) * focal * .13;
-      const pixels = Math.min(24, Math.max(6, focal * .22 / z));
-      let sizeIndex = 0;
-      for (let j = 1; j < TUNNEL_SIZES.length; j++) {
-        if (Math.abs(TUNNEL_SIZES[j] - pixels) < Math.abs(TUNNEL_SIZES[sizeIndex] - pixels)) sizeIndex = j;
-      }
-      for (let lane = 0; lane < this.lanes; lane++) {
-        const i = ring * this.lanes + lane;
-        const angle = lane / this.lanes * Math.PI * 2 + z * .18;
-        this.x[i] = Math.round(cx + Math.cos(angle) * radius);
-        this.y[i] = Math.round(cy + Math.sin(angle) * radius);
-        this.size[i] = sizeIndex;
-        this.glyph[i] = ((i * 17 + seed) >>> 0) % TUNNEL_GLYPHS;
-      }
-    }
-  }
-
-  pulse() { this.pulseUntil = this.time + .7; }
-  surge() { this.surgeAt = this.time; }
-  step(dt, speed = 1) {
-    this.time += Math.max(0, Math.min(.25, dt)) * speed;
-    const phase = (this.time * 5) | 0;
-    this.visibleCount = 0;
-    // Far-to-near ordering, bounded by 240 static slots.
-    for (let ring = this.rings - 1; ring >= 0; ring--) {
-      for (let lane = 0; lane < this.lanes; lane++) {
-        const i = ring * this.lanes + lane;
-        const size = TUNNEL_SIZES[this.size[i]];
-        if (this.x[i] < -size || this.x[i] > this.width || this.y[i] < -size || this.y[i] > this.height) continue;
-        // A flow front travels from high (far) rings to low (near) rings.
-        const age = ((ring + phase + lane * 3) % 13);
-        let level = age < 8 ? Math.max(1, 5 - ((age * 5 / 8) | 0)) : 0;
-        if (level && (this.time < this.pulseUntil || this.time - this.surgeAt < 1.2)) level = 5;
-        this.level[i] = level;
-        if (level) {
-          this.glyph[i] = (i * 17 + (phase >> 1)) % TUNNEL_GLYPHS;
-          this.visible[this.visibleCount++] = i;
-        }
-      }
-    }
-    return this.visibleCount;
-  }
-
-  get bytes() {
-    return this.x.byteLength + this.y.byteLength + this.size.byteLength +
-      this.glyph.byteLength + this.level.byteLength + this.visible.byteLength;
   }
 }

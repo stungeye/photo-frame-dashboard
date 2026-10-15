@@ -3,7 +3,7 @@
 // it is never loaded by the frame. Both simulations use a deterministic seed.
 import vm from 'node:vm';
 import fs from 'node:fs';
-import { RainField, TunnelField } from '../public/rain/frame-core.js';
+import { RainField } from '../public/rain/frame-core.js';
 
 let seed = 12345;
 const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
@@ -58,17 +58,13 @@ function reference(mode) {
   for (let i = 0; i < 100; i++) { clock += 100; vm.runInContext('draw()', context); }
   return Object.fromEntries(Object.entries(counts).map(([key, value]) => [key, Math.round(value / 100)]));
 }
-const beforeRain = reference('rain'), beforeTunnel = reference('tunnel');
+const beforeRain = reference('rain');
 const field = new RainField(640, 430, 12345);
 field.step(0);
 let dirty = 0;
 for (let i = 0; i < 100; i++) dirty += field.step(.1);
-const tunnel = new TunnelField(640, 430, 12345);
-let sprites = 0;
-for (let i = 0; i < 100; i++) sprites += tunnel.step(1 / 6);
 const afterRain = { blits: Math.round(dirty / 100), scaled: 0, fills: 0,
   pixels: Math.round(dirty / 100) * 20 * 24, simulationBytes: field.bytes };
-const afterTunnel = { blits: Math.round(sprites / 100), scaled: 0, fills: 1, simulationBytes: tunnel.bytes };
-console.log(JSON.stringify({ reference: { ...retained, canvasBytes: beforeBytes, rain: beforeRain, tunnel: beforeTunnel },
-  eco: { width: 640, height: 430, cells: field.count, rain: afterRain, tunnel: afterTunnel },
-  note: 'Canvas command counts and nominal bitmap bytes, not measured device FPS, RSS or temperature. Rain semantics and tunnel visuals differ.' }, null, 2));
+console.log(JSON.stringify({ reference: { ...retained, canvasBytes: beforeBytes, rain: beforeRain },
+  eco: { width: 640, height: 430, cells: field.count, rain: afterRain },
+  note: 'Canvas command counts and nominal bitmap bytes, not measured device FPS, RSS or temperature. Rain simulation semantics differ.' }, null, 2));

@@ -18,7 +18,7 @@ remote image dependencies, analytics, audio engines or account connections.
 | Daybook | Real local clock, sample weather and agenda; tap the household checkboxes. |
 | Habitat | Toggle simulated room lights; home consumption and exported solar power change. |
 | Departures | Change direction; simulated departures count down and loop every 24 minutes. |
-| Digital rain | Touch ripples, rain/lite tunnel, four grades, flat/baked scanlines, surge, reseed, pause. |
+| Digital rain | Touch ripples, four grades, flat/baked scanlines, surge, reseed, pause. |
 | Gravity lab | Drag the attractor, switch to binary stars, pause or create a new field. |
 | Light loom | Draw with 2/6/12-fold symmetry; change colour, undo, clear, or keep a drawing locally. |
 | Living grid | Conway's Life on a wrapping grid. Paint/erase, step, randomise, or plant gliders. |
@@ -32,7 +32,7 @@ browser's local storage, with a graceful session-only fallback.
 
 Canvas experiments cancel their animation loop on navigation and skip work when
 the document is hidden. The rain iframe is destroyed on navigation. The renderer
-is limited to 10 updates/s (lite tunnel: 6); the other animated canvases to 15–30 FPS. Reduced-motion
+is limited to 10 updates/s; the other animated canvases to 15–30 FPS. Reduced-motion
 preferences start rain, gravity and Life paused and stop decorative CSS animations.
 Fill-frame mode retains an on-screen Menu exit; Escape also exits.
 
@@ -44,8 +44,7 @@ renderer and original CRT implementation as unloaded references. The running
 edition now uses a specialized fixed-grid, dirty-tile renderer in `frame-core.js`
 and `frame-engine.js`. It has no audio engine or beat reactivity. It defaults to
 flat display, caps its raster at 640 pixels wide, bakes scanlines into its atlas,
-and leaves idle time between updates. The lite tunnel uses precomputed positions
-and pre-sized glyphs, giving up camera flight and rotating text. Offscreen
+and leaves idle time between updates. Tunnel mode has been removed. Offscreen
 pan/pinch territory is omitted. See [the performance notes](RAIN-PERFORMANCE.md)
 for operation counts, memory bounds, device measurements and test commands. The original
 rain source's UTF-8 SHA-256 was
@@ -93,7 +92,7 @@ checks and their limits are recorded in [RAIN-PERFORMANCE.md](RAIN-PERFORMANCE.m
 - The original CRT path ran poorly and its curved mode drew a blank image on this
   GPU. The initial frame edition therefore used CSS scanlines. A sample of that rain
   displayed 19 FPS and the simplified tunnel 7 FPS; these are observations, not
-  guaranteed rates. The tunnel remains an experimental, slower option.
+  guaranteed rates. Those initial tunnel modes have since been removed.
 - The device is left on Explore with USB preview active. Its original hosted
   startup URL, default Home selection and navigation service are preserved.
 

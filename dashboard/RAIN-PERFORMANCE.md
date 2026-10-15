@@ -47,11 +47,8 @@ The replacement changes the work rather than trying to increase the FPS:
   1280×800 screen is unchanged. There is no DPR multiplier or offscreen pan/zoom
   world. Colour changes, resize and reseed may repaint the whole field once.
 
-The original tunnel has been replaced by **Tunnel · lite**, a different visual
-tradeoff: code flows along a fixed perspective projection, without camera flight,
-rotating glyphs or continuously warped geometry. Projection/trigonometry happen
-only at setup. At most 240 slots use six pre-sized atlas variants; the sampled
-view averaged about 91 visible copies per update, capped at 6 updates/s.
+Tunnel mode has been removed at the owner's request; the running renderer and
+controls now support rain only.
 
 ## Reproducible command-count comparison
 
@@ -80,10 +77,10 @@ The pixel estimate includes the reference's full-size vignette. It excludes
 browser composition, framebuffer presentation and driver allocations. Bitmap
 storage is width×height×4, not measured GPU memory, RSS or PSS. The simulations
 and visuals differ; these counts establish bounded work, not an FPS prediction.
-The new smaller atlas is reused on mode/profile changes instead of retaining
+The new smaller atlas is reused on palette changes instead of retaining
 an atlas for every configuration.
 
-![The eco renderer running on the frame with diagnostic counters](../docs/images/frame-rain-eco.jpg)
+![The eco renderer running on the frame with diagnostic counters, before tunnel removal](../docs/images/frame-rain-eco.jpg)
 
 ## Brief device observations, 2026-10-15
 
@@ -107,20 +104,42 @@ older audit's `dumpsys cpuinfo` snapshot, not a controlled long-duration A/B tes
 The direct-page test raster was 640×400; the normal sidebar page is 640×430.
 
 The diagnostic HUD sampled about 3.6 ms simulation + submission for flat rain,
-5.1 ms for scanlines and 29.2 ms for the lite tunnel. These timings exclude
+5.1 ms for scanlines. The former lite-tunnel measurement above is historical;
+that mode has now been removed. These timings exclude
 deferred GPU/raster/compositor work. The FPS counter counts submitted updates,
 not hardware presentation. A short cool-device test does **not** establish a
 five-minute equilibrium temperature or predict behavior in a different enclosure.
 
 For a bounded diagnostic run, open `/rain/index.html?diag&bench` in the kiosk.
-It pauses automatically after 80 timed updates. Add `&scan=1` for scanlines or
-`&mode=tunnel` for the lite tunnel. Diagnostics retain one scalar snapshot, not
+It pauses automatically after 80 timed updates. Add `&scan=1` for scanlines. Diagnostics retain one scalar snapshot, not
 a growing trace. Normal demo navigation does not enable this benchmark mode.
 
-Eleven automated tests cover dirty-tile correctness, stable buffer identities
+Ten automated tests cover dirty-tile correctness, stable buffer identities
 through 10,000 ticks, pulse expiry, elapsed-time motion, dirty-cell fraction,
-tunnel bounds/no tick-time trigonometry, duty scheduling, pause/visibility
-cancellation, repeated mode changes, cleanup, invalid options and benchmark stop.
+duty scheduling, pause/visibility
+cancellation, repeated reseeding and palette changes, cleanup, invalid options and benchmark stop.
 
 General Canvas guidance supporting the atlas/integer-coordinate approach:
 [MDN: Optimizing canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas).
+
+## Follow-up on the owner's five-minute scanline run
+
+The owner reported running scanline rain for five minutes. An additional read-only
+11.06-second sample, without reloading or changing that view, found:
+
+- Reported chip temperature: initially 56°C, then 57°C for the remaining readings.
+- Thermal cooling state: 0 throughout.
+- Home HQ CPU: 61.31% on the one-core scale; whole-system CPU: 39.37% across all cores.
+- Screenshot counter: 9 FPS, scanlines enabled, in Home HQ's fill-frame view.
+- Home HQ PSS: 136919 KiB (about 133.7 MiB).
+
+This longer-run CPU figure supersedes treating the earlier 3–4% short sample as
+representative of normal use. The earlier samples opened the rain page directly;
+this one used the embedded Home HQ fill-frame view. Duration and page composition
+both differ, so the cause of the extra CPU has not been isolated. The measured
+benefit is lower reported temperature and reduced CPU relative to the original
+heavy workload, not a demonstrated FPS improvement. The original rain already
+reached about 10 FPS. Five minutes of elapsed owner runtime plus this snapshot is
+not a continuous temperature trace or a guarantee of long-term equilibrium.
+
+The running view was left untouched; tunnel removal appears on the next reload.

@@ -69,11 +69,12 @@ test('pause and hidden documents cancel all animation callbacks', () => {
   assert.equal(env.reads, 0);
 });
 
-test('mode changes reuse one atlas and never accumulate animation loops', () => {
+test('reseeding and palette changes reuse one atlas and one animation loop', () => {
   const env = environment();
   assert.equal(env.canvases.length, 2);
   for (let i = 0; i < 20; i++) {
-    assert.equal(env.api.setOption('mode', i % 2 ? 'rain' : 'tunnel'), true);
+    assert.equal(env.api.setOption('grade', i % 2 ? 'cinema' : 'abyss'), true);
+    env.api.reseed();
     env.frame();
     assert.equal(env.canvases.length, 2);
     assert.equal(env.timers.size, 1);
@@ -99,7 +100,8 @@ test('bounded device benchmark pauses itself at 80 timed ticks', () => {
 
 test('invalid options cannot enable a heavy or unknown rendering mode', () => {
   const env = environment({ mode: 'anything' });
-  assert.equal(env.api.state.mode, 'rain');
+  assert.equal(env.api.state.mode, undefined);
+  assert.equal(env.api.setOption('mode', 'tunnel'), false);
   assert.equal(env.api.setOption('mode', 'anything'), false);
   assert.equal(env.api.setOption('grade', '__proto__'), false);
   assert.equal(env.api.setOption('paused', 'false'), false);

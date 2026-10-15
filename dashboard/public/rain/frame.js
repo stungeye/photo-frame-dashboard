@@ -8,7 +8,7 @@ let app;
 window.addEventListener('error', () => { $('error').style.display = 'block'; });
 try {
   app = startFrameRain($('rain'), { benchmark: query.has('bench'),
-    mode: query.get('mode'), scanlines: query.get('scan') === '1' });
+    scanlines: query.get('scan') === '1' });
 } catch (error) {
   $('error').style.display = 'block';
   console.error('Frame rain startup failed', error);
@@ -18,12 +18,10 @@ function update() {
   const state = app.state;
   $('pause').textContent = state.paused ? 'Resume' : 'Pause';
   $('pause').setAttribute('aria-pressed', String(state.paused));
-  $('mode').textContent = state.mode === 'rain' ? 'Tunnel · lite' : 'Return to rain';
   $('grade').textContent = 'Signal: ' + PROFILES[state.grade].name;
   $('crt').textContent = 'Scanlines: ' + (state.crt === 'off' ? 'Off' : 'On');
 }
 $('pause').onclick = () => app.setOption('paused', !app.state.paused);
-$('mode').onclick = () => app.setOption('mode', app.state.mode === 'rain' ? 'tunnel' : 'rain');
 $('grade').onclick = () => {
   const keys = Object.keys(PROFILES);
   app.setOption('grade', keys[(keys.indexOf(app.state.grade) + 1) % keys.length]);
